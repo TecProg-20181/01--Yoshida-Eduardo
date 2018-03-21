@@ -14,6 +14,8 @@ typedef struct _image {
     unsigned short int pixel[512][512][3];
     unsigned int w;
     unsigned int h;
+    char tipoImagem[4];
+    int max_color; // é um atributo relacionado a imagem, então melhor colocar no "objeto"
 } Image;
 
 
@@ -98,55 +100,76 @@ Image rotacionar90direita(Image img) {
     return rotacionada;
 }
 
-void inverter_cores(unsigned short int pixel[512][512][3],
-                    unsigned int w, unsigned int h) {
-    for (unsigned int i = 0; i < h; ++i) {
-        for (unsigned int j = 0; j < w; ++j) {
-            pixel[i][j][0] = 255 - pixel[i][j][0];
-            pixel[i][j][1] = 255 - pixel[i][j][1];
-            pixel[i][j][2] = 255 - pixel[i][j][2];
-        }
-    }
+Image inverter_cores(Image img) {
+  Image temp = img;
+
+  for (unsigned int i = 0; i < temp.h; ++i) {
+      for (unsigned int j = 0; j < temp.w; ++j) {
+          temp.pixel[i][j][0] = 255 - temp.pixel[i][j][0];
+          temp.pixel[i][j][1] = 255 - temp.pixel[i][j][1];
+          temp.pixel[i][j][2] = 255 - temp.pixel[i][j][2];
+      }
+  }
+  return temp;
 }
 
-Image cortar_imagem(Image img, int x, int y, int w, int h) {
+Image cortar_imagem(Image img) {
     Image cortada;
+    int x, y;
 
-    cortada.w = w;
-    cortada.h = h;
+    scanf("%d %d", &x, &y);
+    scanf("%d %d", &cortada.w, &cortada.h);
 
-    for(int i = 0; i < h; ++i) {
-        for(int j = 0; j < w; ++j) {
+    for(int i = 0; i < cortada.h; ++i) {
+        for(int j = 0; j < cortada.w; ++j) {
             cortada.pixel[i][j][0] = img.pixel[i + y][j + x][0];
             cortada.pixel[i][j][1] = img.pixel[i + y][j + x][1];
             cortada.pixel[i][j][2] = img.pixel[i + y][j + x][2];
         }
     }
-
     return cortada;
 }
 
+Image ler_imagem(){
+
+  Image temp;
+
+  scanf("%s", temp.tipoImagem);
+
+  scanf("%u %u %d", &temp.w, &temp.h, &temp.max_color);
+
+  for (unsigned int i = 0; i < temp.h; ++i) {
+      for (unsigned int j = 0; j < temp.w; ++j) {
+          scanf("%hu %hu %hu", &temp.pixel[i][j][0],
+                               &temp.pixel[i][j][1],
+                               &temp.pixel[i][j][2]);
+      }
+  }
+  return temp;
+}
+
+void imprimir_imagem(Image img){
+  // print type of image
+  printf("P3\n");
+  // print width height and color of image
+  printf("%u %u\n255\n", img.w, img.h);
+
+  // print pixels of image
+  for (unsigned int i = 0; i < img.h; ++i) {
+      for (unsigned int j = 0; j < img.w; ++j) {
+          printf("%hu %hu %hu ", img.pixel[i][j][0],
+                                 img.pixel[i][j][1],
+                                 img.pixel[i][j][2]);
+
+      }
+      printf("\n");
+  }
+}
 
 int main() {
     Image img;
 
-    // read type of image
-    char p3[4];
-    scanf("%s", p3);
-
-    // read width height and color of image
-    int max_color;
-    scanf("%u %u %d", &img.w, &img.h, &max_color);
-
-    // read all pixels of image
-    for (unsigned int i = 0; i < img.h; ++i) {
-        for (unsigned int j = 0; j < img.w; ++j) {
-            scanf("%hu %hu %hu", &img.pixel[i][j][0],
-                                 &img.pixel[i][j][1],
-                                 &img.pixel[i][j][2]);
-
-        }
-    }
+    img = ler_imagem();
 
     int n_opcoes;
     scanf("%d", &n_opcoes);
@@ -232,36 +255,18 @@ int main() {
                 break;
             }
             case 6: { // Inversao de Cores
-                inverter_cores(img.pixel, img.w, img.h);
+                img = inverter_cores(img);
                 break;
             }
             case 7: { // Cortar Imagem
-                int x, y;
-                scanf("%d %d", &x, &y);
-                int w, h;
-                scanf("%d %d", &w, &h);
-
-                img = cortar_imagem(img, x, y, w, h);
+                img = cortar_imagem(img);
                 break;
             }
         }
 
     }
 
-    // print type of image
-    printf("P3\n");
-    // print width height and color of image
-    printf("%u %u\n255\n", img.w, img.h);
+    imprimir_imagem(img);
 
-    // print pixels of image
-    for (unsigned int i = 0; i < img.h; ++i) {
-        for (unsigned int j = 0; j < img.w; ++j) {
-            printf("%hu %hu %hu ", img.pixel[i][j][0],
-                                   img.pixel[i][j][1],
-                                   img.pixel[i][j][2]);
-
-        }
-        printf("\n");
-    }
     return 0;
 }
