@@ -25,6 +25,12 @@ int max(int a, int b) {
     return b;
 }
 
+int min(int a, int b){
+    if(a < b)
+      return a;
+    return b;
+}
+
 int pixel_igual(Pixel p1, Pixel p2) {
     if (p1.r == p2.r &&
         p1.g == p2.g &&
@@ -130,6 +136,44 @@ Image cortar_imagem(Image img) {
     return cortada;
 }
 
+Image espelhar(Image img){
+  int horizontal = 0;
+  scanf("%d", &horizontal);
+
+  int w = img.w, h = img.h, x, y;
+  Image temp = img;
+
+  if (horizontal == 1)
+    w /= 2;
+  else
+    h /= 2;
+
+  for (int i = 0; i < h; ++i) {
+      for (int j = 0; j < w; ++j) {
+          x = i; y = j;
+          if (horizontal == 1)
+            y = temp.w - 1 - j;
+          else
+            x = temp.h - 1 - i;
+
+          Pixel aux1;
+          aux1.r = temp.pixel[i][j][0];
+          aux1.g = temp.pixel[i][j][1];
+          aux1.b = temp.pixel[i][j][2];
+
+          temp.pixel[i][j][0] = temp.pixel[x][y][0];
+          temp.pixel[i][j][1] = temp.pixel[x][y][1];
+          temp.pixel[i][j][2] = temp.pixel[x][y][2];
+
+          temp.pixel[x][y][0] = aux1.r;
+          temp.pixel[x][y][1] = aux1.g;
+          temp.pixel[x][y][2] = aux1.b;
+      }
+  }
+  return temp;
+}
+
+
 Image ler_imagem(){
 
   Image temp;
@@ -166,6 +210,32 @@ void imprimir_imagem(Image img){
   }
 }
 
+Image sepia(Image img){
+
+  Image sepia;
+
+  sepia = img;
+
+  for (unsigned int i = 0; i < sepia.h; i++) {
+      for (unsigned int j = 0; j < sepia.w; ++j) {
+          unsigned short int pixel[3];
+          pixel[0] = sepia.pixel[i][j][0];
+          pixel[1] = sepia.pixel[i][j][1];
+          pixel[2] = sepia.pixel[i][j][2];
+
+          int p =  pixel[0] * .393 + pixel[1] * .769 + pixel[2] * .189;
+          sepia.pixel[i][j][0] = min(p, 255);
+
+          p =  pixel[0] * .349 + pixel[1] * .686 + pixel[2] * .168;
+          sepia.pixel[i][j][1] = min(p, 255);
+
+          p =  pixel[0] * .272 + pixel[1] * .534 + pixel[2] * .131;
+          sepia.pixel[i][j][2] = min(p, 255);
+      }
+  }
+  return sepia;
+}
+
 int main() {
     Image img;
 
@@ -184,27 +254,7 @@ int main() {
                 break;
             }
             case 2: { // Filtro Sepia
-                for (unsigned int x = 0; x < img.h; ++x) {
-                    for (unsigned int j = 0; j < img.w; ++j) {
-                        unsigned short int pixel[3];
-                        pixel[0] = img.pixel[x][j][0];
-                        pixel[1] = img.pixel[x][j][1];
-                        pixel[2] = img.pixel[x][j][2];
-
-                        int p =  pixel[0] * .393 + pixel[1] * .769 + pixel[2] * .189;
-                        int menor_r = (255 >  p) ? p : 255;
-                        img.pixel[x][j][0] = menor_r;
-
-                        p =  pixel[0] * .349 + pixel[1] * .686 + pixel[2] * .168;
-                        menor_r = (255 >  p) ? p : 255;
-                        img.pixel[x][j][1] = menor_r;
-
-                        p =  pixel[0] * .272 + pixel[1] * .534 + pixel[2] * .131;
-                        menor_r = (255 >  p) ? p : 255;
-                        img.pixel[x][j][2] = menor_r;
-                    }
-                }
-
+                img = sepia(img);
                 break;
             }
             case 3: { // Blur
@@ -223,35 +273,7 @@ int main() {
                 break;
             }
             case 5: { // Espelhamento
-                int horizontal = 0;
-                scanf("%d", &horizontal);
-
-                int w = img.w, h = img.h;
-
-                if (horizontal == 1) w /= 2;
-                else h /= 2;
-
-                for (int i2 = 0; i2 < h; ++i2) {
-                    for (int j = 0; j < w; ++j) {
-                        int x = i2, y = j;
-
-                        if (horizontal == 1) y = img.w - 1 - j;
-                        else x = img.h - 1 - i2;
-
-                        Pixel aux1;
-                        aux1.r = img.pixel[i2][j][0];
-                        aux1.g = img.pixel[i2][j][1];
-                        aux1.b = img.pixel[i2][j][2];
-
-                        img.pixel[i2][j][0] = img.pixel[x][y][0];
-                        img.pixel[i2][j][1] = img.pixel[x][y][1];
-                        img.pixel[i2][j][2] = img.pixel[x][y][2];
-
-                        img.pixel[x][y][0] = aux1.r;
-                        img.pixel[x][y][1] = aux1.g;
-                        img.pixel[x][y][2] = aux1.b;
-                    }
-                }
+                img = espelhar(img);
                 break;
             }
             case 6: { // Inversao de Cores
