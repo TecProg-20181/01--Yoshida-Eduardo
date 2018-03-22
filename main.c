@@ -7,11 +7,7 @@ typedef struct _pixel {
 } Pixel;
 
 typedef struct _image {
-    // [width][height][rgb]
-    // 0 -> r
-    // 1 -> g
-    // 2 -> b
-    unsigned short int pixel[512][512][3];
+    Pixel pixel[512][512];
     unsigned int w;
     unsigned int h;
     char tipoImagem[4];
@@ -41,29 +37,23 @@ int pixel_igual(Pixel p1, Pixel p2) {
 
 Pixel passar_pixel(Pixel p){
   Pixel temp;
-  temp[0] = p[0];
-  temp[1] = p[1];
-  temp[2] = p[2];
+  temp.r = p.r;
+  temp.g = p.g;
+  temp.b = p.b;
 
   return temp;
 }
 
 Image escala_de_cinza(Image img) {
-    /*for (unsigned int i = 0; i < img.h; ++i) {
-        for (unsigned int j = 0; j < img.w; ++j) {
-            print("%u", img.pixel[i][j][0] + img.pixel[i][j][1] + img.pixel[i][j][2]);
-        }
-    }*/
-
     for (unsigned int i = 0; i < img.h; ++i) {
         for (unsigned int j = 0; j < img.w; ++j) {
-            int media = img.pixel[i][j][0] +
-                        img.pixel[i][j][1] +
-                        img.pixel[i][j][2];
+            int media = img.pixel[i][j].r +
+                        img.pixel[i][j].g +
+                        img.pixel[i][j].b;
             media /= 3;
-            img.pixel[i][j][0] = media;
-            img.pixel[i][j][1] = media;
-            img.pixel[i][j][2] = media;
+            img.pixel[i][j].r = media;
+            img.pixel[i][j].g = media;
+            img.pixel[i][j].b = media;
         }
     }
 
@@ -85,15 +75,15 @@ Image blur(Image img) {
             int menor_w = min(j + quantidade/2, temp.w - 1);
             for(int x = max(0, i - quantidade/2); x <= menor_h; ++x) {
                 for(int y = max(0, j - quantidade/2); y <= menor_w; ++y) {
-                    media.r += temp.pixel[x][y][0];
-                    media.g += temp.pixel[x][y][1];
-                    media.b += temp.pixel[x][y][2];
+                    media.r += temp.pixel[x][y].r;
+                    media.g += temp.pixel[x][y].g;
+                    media.b += temp.pixel[x][y].b;
                 }
             }
 
-            temp.pixel[i][j][0] = media.r/(quantidade * quantidade);
-            temp.pixel[i][j][1] = media.g/(quantidade * quantidade);
-            temp.pixel[i][j][2] = media.b/(quantidade * quantidade);
+            temp.pixel[i][j].r = media.r/(quantidade * quantidade);
+            temp.pixel[i][j].g = media.g/(quantidade * quantidade);
+            temp.pixel[i][j].b = media.b/(quantidade * quantidade);
         }
     }
 
@@ -101,6 +91,7 @@ Image blur(Image img) {
 }
 
 Image rotacionar90direita(Image img) {
+    
     Image rotacionada;
 
     rotacionada.w = img.h;
@@ -108,9 +99,7 @@ Image rotacionar90direita(Image img) {
 
     for (unsigned int i = 0; i < rotacionada.h; ++i) {
         for (int j = rotacionada.w - 1, x = 0; j >= 0; --j, ++x) {
-            rotacionada.pixel[i][j][0] = img.pixel[x][i][0];
-            rotacionada.pixel[i][j][1] = img.pixel[x][i][1];
-            rotacionada.pixel[i][j][2] = img.pixel[x][i][2];
+            rotacionada.pixel[i][j] = passar_pixel(img.pixel[x][i]);
         }
     }
 
@@ -122,9 +111,9 @@ Image inverter_cores(Image img) {
 
   for (unsigned int i = 0; i < temp.h; ++i) {
       for (unsigned int j = 0; j < temp.w; ++j) {
-          temp.pixel[i][j][0] = 255 - temp.pixel[i][j][0];
-          temp.pixel[i][j][1] = 255 - temp.pixel[i][j][1];
-          temp.pixel[i][j][2] = 255 - temp.pixel[i][j][2];
+          temp.pixel[i][j].r = 255 - temp.pixel[i][j].r;
+          temp.pixel[i][j].g = 255 - temp.pixel[i][j].g;
+          temp.pixel[i][j].b = 255 - temp.pixel[i][j].b;
       }
   }
   return temp;
@@ -139,9 +128,7 @@ Image cortar_imagem(Image img) {
 
     for(int i = 0; i < cortada.h; ++i) {
         for(int j = 0; j < cortada.w; ++j) {
-            cortada.pixel[i][j][0] = img.pixel[i + y][j + x][0];
-            cortada.pixel[i][j][1] = img.pixel[i + y][j + x][1];
-            cortada.pixel[i][j][2] = img.pixel[i + y][j + x][2];
+            cortada.pixel[i][j] = passar_pixel(img.pixel[i + y][j + x]);
         }
     }
     return cortada;
@@ -170,14 +157,8 @@ Image espelhar(Image img){
           Pixel aux1;
 
           aux1 = passar_pixel(temp.pixel[i][j]);
-
-          temp.pixel[i][j][0] = temp.pixel[x][y][0];
-          temp.pixel[i][j][1] = temp.pixel[x][y][1];
-          temp.pixel[i][j][2] = temp.pixel[x][y][2];
-
-          temp.pixel[x][y][0] = aux1.r;
-          temp.pixel[x][y][1] = aux1.g;
-          temp.pixel[x][y][2] = aux1.b;
+          temp.pixel[i][j] = passar_pixel(temp.pixel[x][y]);
+          temp.pixel[x][y] = passar_pixel(aux1);
       }
   }
   return temp;
@@ -194,9 +175,9 @@ Image ler_imagem(){
 
   for (unsigned int i = 0; i < temp.h; ++i) {
       for (unsigned int j = 0; j < temp.w; ++j) {
-          scanf("%hu %hu %hu", &temp.pixel[i][j][0],
-                               &temp.pixel[i][j][1],
-                               &temp.pixel[i][j][2]);
+          scanf("%hu %hu %hu", &temp.pixel[i][j].r,
+                               &temp.pixel[i][j].g,
+                               &temp.pixel[i][j].b);
       }
   }
   return temp;
@@ -205,15 +186,16 @@ Image ler_imagem(){
 void imprimir_imagem(Image img){
   // print type of image
   printf("P3\n");
+
   // print width height and color of image
   printf("%u %u\n255\n", img.w, img.h);
 
   // print pixels of image
   for (unsigned int i = 0; i < img.h; ++i) {
       for (unsigned int j = 0; j < img.w; ++j) {
-          printf("%hu %hu %hu ", img.pixel[i][j][0],
-                                 img.pixel[i][j][1],
-                                 img.pixel[i][j][2]);
+          printf("%hu %hu %hu ", img.pixel[i][j].r,
+                                 img.pixel[i][j].g,
+                                 img.pixel[i][j].b);
 
       }
       printf("\n");
@@ -229,14 +211,14 @@ Image sepia(Image img){
   for (unsigned int i = 0; i < sepia.h; i++) {
       for (unsigned int j = 0; j < sepia.w; ++j) {
 
-          int p =  sepia.pixel[i][j][0] * .393 + sepia.pixel[i][j][1] * .769 + sepia.pixel[i][j][2] * .189;
-          sepia.pixel[i][j][0] = min(p, 255);
+          int p =  sepia.pixel[i][j].r * .393 + sepia.pixel[i][j].g * .769 + sepia.pixel[i][j].b * .189;
+          sepia.pixel[i][j].r = min(p, 255);
 
-          p =  sepia.pixel[i][j][0] * .349 + sepia.pixel[i][j][1] * .686 + sepia.pixel[i][j][2]* .168;
-          sepia.pixel[i][j][1] = min(p, 255);
+          p =  sepia.pixel[i][j].r * .349 + sepia.pixel[i][j].g * .686 + sepia.pixel[i][j].b* .168;
+          sepia.pixel[i][j].g = min(p, 255);
 
-          p =  sepia.pixel[i][j][0] * .272 + sepia.pixel[i][j][1] * .534 + sepia.pixel[i][j][2] * .131;
-          sepia.pixel[i][j][2] = min(p, 255);
+          p =  sepia.pixel[i][j].r * .272 + sepia.pixel[i][j].g * .534 + sepia.pixel[i][j].b * .131;
+          sepia.pixel[i][j].b = min(p, 255);
       }
   }
   return sepia;
@@ -269,12 +251,7 @@ int main() {
                 break;
             }
             case 4: { // Rotacao
-                int quantas_vezes = 0;
-                scanf("%d", &quantas_vezes);
-                quantas_vezes %= 4;
-                for (int j = 0; j < quantas_vezes; ++j) {
-                    img = rotacionar90direita(img);
-                }
+                img = rotacionar90direita(img);
                 break;
             }
             case 5: { // Espelhamento
