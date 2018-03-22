@@ -62,31 +62,34 @@ Image escala_de_cinza(Image img) {
     return img;
 }
 
-void blur(unsigned int h, unsigned short int pixel[512][512][3], int T, unsigned int w) {
-    for (unsigned int i = 0; i < h; ++i) {
-        for (unsigned int j = 0; j < w; ++j) {
+Image blur(Image img) {
+
+    int quantidade = 0;
+    scanf("%d", &quantidade);
+
+    Image temp = img;
+
+    for (unsigned int i = 0; i < temp.h; ++i) {
+        for (unsigned int j = 0; j < temp.w; ++j) {
             Pixel media = {0, 0, 0};
 
-            int menor_h = (h - 1 > i + T/2) ? i + T/2 : h - 1;
-            int min_w = (w - 1 > j + T/2) ? j + T/2 : w - 1;
-            for(int x = (0 > i - T/2 ? 0 : i - T/2); x <= menor_h; ++x) {
-                for(int y = (0 > j - T/2 ? 0 : j - T/2); y <= min_w; ++y) {
-                    media.r += pixel[x][y][0];
-                    media.g += pixel[x][y][1];
-                    media.b += pixel[x][y][2];
+            int menor_h = min(i + quantidade/2, temp.h -1);
+            int menor_w = min(j + quantidade/2, temp.w - 1);
+            for(int x = max(0, i - quantidade/2); x <= menor_h; ++x) {
+                for(int y = max(0, j - quantidade/2); y <= menor_w; ++y) {
+                    media.r += temp.pixel[x][y][0];
+                    media.g += temp.pixel[x][y][1];
+                    media.b += temp.pixel[x][y][2];
                 }
             }
 
-            // printf("%u", media.r)
-            media.r /= T * T;
-            media.g /= T * T;
-            media.b /= T * T;
-
-            pixel[i][j][0] = media.r;
-            pixel[i][j][1] = media.g;
-            pixel[i][j][2] = media.b;
+            temp.pixel[i][j][0] = media.r/(quantidade * quantidade);
+            temp.pixel[i][j][1] = media.g/(quantidade * quantidade);
+            temp.pixel[i][j][2] = media.b/(quantidade * quantidade);
         }
     }
+
+    return temp;
 }
 
 Image rotacionar90direita(Image img) {
@@ -95,11 +98,11 @@ Image rotacionar90direita(Image img) {
     rotacionada.w = img.h;
     rotacionada.h = img.w;
 
-    for (unsigned int i = 0, y = 0; i < rotacionada.h; ++i, ++y) {
+    for (unsigned int i = 0; i < rotacionada.h; ++i) {
         for (int j = rotacionada.w - 1, x = 0; j >= 0; --j, ++x) {
-            rotacionada.pixel[i][j][0] = img.pixel[x][y][0];
-            rotacionada.pixel[i][j][1] = img.pixel[x][y][1];
-            rotacionada.pixel[i][j][2] = img.pixel[x][y][2];
+            rotacionada.pixel[i][j][0] = img.pixel[x][i][0];
+            rotacionada.pixel[i][j][1] = img.pixel[x][i][1];
+            rotacionada.pixel[i][j][2] = img.pixel[x][i][2];
         }
     }
 
@@ -140,7 +143,7 @@ Image espelhar(Image img){
   int horizontal = 0;
   scanf("%d", &horizontal);
 
-  int w = img.w, h = img.h, x, y;
+  int w = img.w, h = img.h;
   Image temp = img;
 
   if (horizontal == 1)
@@ -150,7 +153,7 @@ Image espelhar(Image img){
 
   for (int i = 0; i < h; ++i) {
       for (int j = 0; j < w; ++j) {
-          x = i; y = j;
+          int x = i, y = j;
           if (horizontal == 1)
             y = temp.w - 1 - j;
           else
@@ -218,23 +221,20 @@ Image sepia(Image img){
 
   for (unsigned int i = 0; i < sepia.h; i++) {
       for (unsigned int j = 0; j < sepia.w; ++j) {
-          unsigned short int pixel[3];
-          pixel[0] = sepia.pixel[i][j][0];
-          pixel[1] = sepia.pixel[i][j][1];
-          pixel[2] = sepia.pixel[i][j][2];
 
-          int p =  pixel[0] * .393 + pixel[1] * .769 + pixel[2] * .189;
+          int p =  sepia.pixel[i][j][0] * .393 + sepia.pixel[i][j][1] * .769 + sepia.pixel[i][j][2] * .189;
           sepia.pixel[i][j][0] = min(p, 255);
 
-          p =  pixel[0] * .349 + pixel[1] * .686 + pixel[2] * .168;
+          p =  sepia.pixel[i][j][0] * .349 + sepia.pixel[i][j][1] * .686 + sepia.pixel[i][j][2]* .168;
           sepia.pixel[i][j][1] = min(p, 255);
 
-          p =  pixel[0] * .272 + pixel[1] * .534 + pixel[2] * .131;
+          p =  sepia.pixel[i][j][0] * .272 + sepia.pixel[i][j][1] * .534 + sepia.pixel[i][j][2] * .131;
           sepia.pixel[i][j][2] = min(p, 255);
       }
   }
   return sepia;
 }
+
 
 int main() {
     Image img;
@@ -258,9 +258,7 @@ int main() {
                 break;
             }
             case 3: { // Blur
-                int tamanho = 0;
-                scanf("%d", &tamanho);
-                blur(img.h, img.pixel, tamanho, img.w);
+                img = blur(img);
                 break;
             }
             case 4: { // Rotacao
@@ -287,7 +285,6 @@ int main() {
         }
 
     }
-
     imprimir_imagem(img);
 
     return 0;
