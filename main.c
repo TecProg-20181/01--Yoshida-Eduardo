@@ -39,6 +39,14 @@ int pixel_igual(Pixel p1, Pixel p2) {
     return 0;
 }
 
+Pixel passar_pixel(Pixel p){
+  Pixel temp;
+  temp[0] = p[0];
+  temp[1] = p[1];
+  temp[2] = p[2];
+
+  return temp;
+}
 
 Image escala_de_cinza(Image img) {
     /*for (unsigned int i = 0; i < img.h; ++i) {
@@ -160,9 +168,8 @@ Image espelhar(Image img){
             x = temp.h - 1 - i;
 
           Pixel aux1;
-          aux1.r = temp.pixel[i][j][0];
-          aux1.g = temp.pixel[i][j][1];
-          aux1.b = temp.pixel[i][j][2];
+
+          aux1 = passar_pixel(temp.pixel[i][j]);
 
           temp.pixel[i][j][0] = temp.pixel[x][y][0];
           temp.pixel[i][j][1] = temp.pixel[x][y][1];
