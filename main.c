@@ -11,8 +11,22 @@ typedef struct _image {
     unsigned int w;
     unsigned int h;
     char tipoImagem[4];
-    int max_color; // é um atributo relacionado a imagem, então melhor colocar no "objeto"
+    int max_color;
 } Image;
+
+int max(int a, int b);
+int min(int a, int b);
+
+Pixel copiar_pixel(Pixel p);
+Image escala_de_cinza(Image img);
+Image blur(Image img);
+Image rotacionar90direita(Image img);
+Image inverter_cores(Image img);
+Image cortar_imagem(Image img);
+Image espelhar(Image img);
+Image ler_imagem();
+void imprimir_imagem(Image img);
+Image sepia(Image img);
 
 
 int max(int a, int b) {
@@ -35,7 +49,7 @@ int pixel_igual(Pixel p1, Pixel p2) {
     return 0;
 }
 
-Pixel passar_pixel(Pixel p){
+Pixel copiar_pixel(Pixel p){
   Pixel temp;
   temp.r = p.r;
   temp.g = p.g;
@@ -44,20 +58,27 @@ Pixel passar_pixel(Pixel p){
   return temp;
 }
 
+unsigned int media_pixel(Pixel p){
+  unsigned int media = (p.r + p.g + p.b)/3;
+  return media;
+}
+
+Pixel passar_valor(unsigned int valor){
+  Pixel p;
+  p.r = valor;
+  p.g = valor;
+  p.b = valor;
+  return p;
+}
+
 Image escala_de_cinza(Image img) {
+    Image temp = img;
     for (unsigned int i = 0; i < img.h; ++i) {
         for (unsigned int j = 0; j < img.w; ++j) {
-            int media = img.pixel[i][j].r +
-                        img.pixel[i][j].g +
-                        img.pixel[i][j].b;
-            media /= 3;
-            img.pixel[i][j].r = media;
-            img.pixel[i][j].g = media;
-            img.pixel[i][j].b = media;
+            temp.pixel[i][j] = passar_valor(media_pixel(temp.pixel[i][j]));
         }
     }
-
-    return img;
+    return temp;
 }
 
 Image blur(Image img) {
@@ -91,7 +112,7 @@ Image blur(Image img) {
 }
 
 Image rotacionar90direita(Image img) {
-    
+
     Image rotacionada;
 
     rotacionada.w = img.h;
@@ -99,7 +120,7 @@ Image rotacionar90direita(Image img) {
 
     for (unsigned int i = 0; i < rotacionada.h; ++i) {
         for (int j = rotacionada.w - 1, x = 0; j >= 0; --j, ++x) {
-            rotacionada.pixel[i][j] = passar_pixel(img.pixel[x][i]);
+            rotacionada.pixel[i][j] = copiar_pixel(img.pixel[x][i]);
         }
     }
 
@@ -128,7 +149,7 @@ Image cortar_imagem(Image img) {
 
     for(int i = 0; i < cortada.h; ++i) {
         for(int j = 0; j < cortada.w; ++j) {
-            cortada.pixel[i][j] = passar_pixel(img.pixel[i + y][j + x]);
+            cortada.pixel[i][j] = copiar_pixel(img.pixel[i + y][j + x]);
         }
     }
     return cortada;
@@ -156,9 +177,9 @@ Image espelhar(Image img){
 
           Pixel aux1;
 
-          aux1 = passar_pixel(temp.pixel[i][j]);
-          temp.pixel[i][j] = passar_pixel(temp.pixel[x][y]);
-          temp.pixel[x][y] = passar_pixel(aux1);
+          aux1 = copiar_pixel(temp.pixel[i][j]);
+          temp.pixel[i][j] = copiar_pixel(temp.pixel[x][y]);
+          temp.pixel[x][y] = copiar_pixel(aux1);
       }
   }
   return temp;
@@ -226,9 +247,7 @@ Image sepia(Image img){
 
 
 int main() {
-    Image img;
-
-    img = ler_imagem();
+    Image img = ler_imagem();
 
     int n_opcoes;
     scanf("%d", &n_opcoes);
