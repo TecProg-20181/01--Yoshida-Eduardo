@@ -17,15 +17,15 @@ typedef struct _image {
 int max(int a, int b);
 int min(int a, int b);
 
-Pixel copiar_pixel(Pixel p);
-Image escala_de_cinza(Image img);
+Pixel copy_pixel(Pixel p);
+Image grayscale(Image img);
 Image blur(Image img);
-Image rotacionar90direita(Image img);
-Image inverter_cores(Image img);
-Image cortar_imagem(Image img);
-Image espelhar(Image img);
-Image ler_imagem();
-void imprimir_imagem(Image img);
+Image rotate_90_right(Image img);
+Image invert_colors(Image img);
+Image crop_image(Image img);
+Image mirror(Image img);
+Image read_image();
+void print_image(Image img);
 Image sepia(Image img);
 
 
@@ -41,15 +41,7 @@ int min(int a, int b){
     return b;
 }
 
-int pixel_igual(Pixel p1, Pixel p2) {
-    if (p1.r == p2.r &&
-        p1.g == p2.g &&
-        p1.b == p2.b)
-        return 1;
-    return 0;
-}
-
-Pixel copiar_pixel(Pixel p){
+Pixel copy_pixel(Pixel p){
   Pixel temp;
   temp.r = p.r;
   temp.g = p.g;
@@ -58,9 +50,9 @@ Pixel copiar_pixel(Pixel p){
   return temp;
 }
 
-unsigned int media_pixel(Pixel p){
-  unsigned int media = (p.r + p.g + p.b)/3;
-  return media;
+unsigned int avg_pixel(Pixel p){
+  unsigned int avg = (p.r + p.g + p.b)/3;
+  return avg;
 }
 
 Pixel passar_valor(unsigned int valor){
@@ -71,11 +63,11 @@ Pixel passar_valor(unsigned int valor){
   return p;
 }
 
-Image escala_de_cinza(Image img) {
+Image grayscale(Image img) {
     Image temp = img;
     for (unsigned int i = 0; i < img.h; ++i) {
         for (unsigned int j = 0; j < img.w; ++j) {
-            temp.pixel[i][j] = passar_valor(media_pixel(temp.pixel[i][j]));
+            temp.pixel[i][j] = passar_valor(avg_pixel(temp.pixel[i][j]));
         }
     }
     return temp;
@@ -83,51 +75,57 @@ Image escala_de_cinza(Image img) {
 
 Image blur(Image img) {
 
-    int quantidade = 0;
-    scanf("%d", &quantidade);
+    int amount = 0;
+    scanf("%d", &amount);
 
     Image temp = img;
 
     for (unsigned int i = 0; i < temp.h; ++i) {
         for (unsigned int j = 0; j < temp.w; ++j) {
-            Pixel media = {0, 0, 0};
+            Pixel avg = {0, 0, 0};
 
-            int menor_h = min(i + quantidade/2, temp.h -1);
-            int menor_w = min(j + quantidade/2, temp.w - 1);
-            for(int x = max(0, i - quantidade/2); x <= menor_h; ++x) {
-                for(int y = max(0, j - quantidade/2); y <= menor_w; ++y) {
-                    media.r += temp.pixel[x][y].r;
-                    media.g += temp.pixel[x][y].g;
-                    media.b += temp.pixel[x][y].b;
+            int menor_h = min(i + amount/2, temp.h -1);
+            int menor_w = min(j + amount/2, temp.w - 1);
+            for(int x = max(0, i - amount/2); x <= menor_h; ++x) {
+                for(int y = max(0, j - amount/2); y <= menor_w; ++y) {
+                    avg.r += temp.pixel[x][y].r;
+                    avg.g += temp.pixel[x][y].g;
+                    avg.b += temp.pixel[x][y].b;
                 }
             }
 
-            temp.pixel[i][j].r = media.r/(quantidade * quantidade);
-            temp.pixel[i][j].g = media.g/(quantidade * quantidade);
-            temp.pixel[i][j].b = media.b/(quantidade * quantidade);
+            temp.pixel[i][j].r = avg.r/(amount * amount);
+            temp.pixel[i][j].g = avg.g/(amount * amount);
+            temp.pixel[i][j].b = avg.b/(amount * amount);
         }
     }
 
     return temp;
 }
 
-Image rotacionar90direita(Image img) {
+Image rotate_90_right(Image img) {
 
-    Image rotacionada;
+    int number;
+    scanf("%d", &number);
+    number = number % 4;
 
-    rotacionada.w = img.h;
-    rotacionada.h = img.w;
+    Image temp;
 
-    for (unsigned int i = 0; i < rotacionada.h; ++i) {
-        for (int j = rotacionada.w - 1, x = 0; j >= 0; --j, ++x) {
-            rotacionada.pixel[i][j] = copiar_pixel(img.pixel[x][i]);
-        }
+    temp.w = img.h;
+    temp.h = img.w;
+
+    for(int x = 0; x < number; x++){
+      for (unsigned int i = 0; i < temp.h; ++i) {
+          for (int j = temp.w - 1, x = 0; j >= 0; --j, ++x) {
+              temp.pixel[i][j] = copy_pixel(img.pixel[x][i]);
+          }
+      }
     }
-
-    return rotacionada;
+    
+    return temp;
 }
 
-Image inverter_cores(Image img) {
+Image invert_colors(Image img) {
   Image temp = img;
 
   for (unsigned int i = 0; i < temp.h; ++i) {
@@ -140,22 +138,22 @@ Image inverter_cores(Image img) {
   return temp;
 }
 
-Image cortar_imagem(Image img) {
-    Image cortada;
+Image crop_image(Image img) {
+    Image temp;
     int x, y;
 
     scanf("%d %d", &x, &y);
-    scanf("%d %d", &cortada.w, &cortada.h);
+    scanf("%d %d", &temp.w, &temp.h);
 
-    for(int i = 0; i < cortada.h; ++i) {
-        for(int j = 0; j < cortada.w; ++j) {
-            cortada.pixel[i][j] = copiar_pixel(img.pixel[i + y][j + x]);
+    for(int i = 0; i < temp.h; ++i) {
+        for(int j = 0; j < temp.w; ++j) {
+            temp.pixel[i][j] = copy_pixel(img.pixel[i + y][j + x]);
         }
     }
-    return cortada;
+    return temp;
 }
 
-Image espelhar(Image img){
+Image mirror(Image img){
   int horizontal = 0;
   scanf("%d", &horizontal);
 
@@ -177,16 +175,16 @@ Image espelhar(Image img){
 
           Pixel aux1;
 
-          aux1 = copiar_pixel(temp.pixel[i][j]);
-          temp.pixel[i][j] = copiar_pixel(temp.pixel[x][y]);
-          temp.pixel[x][y] = copiar_pixel(aux1);
+          aux1 = copy_pixel(temp.pixel[i][j]);
+          temp.pixel[i][j] = copy_pixel(temp.pixel[x][y]);
+          temp.pixel[x][y] = copy_pixel(aux1);
       }
   }
   return temp;
 }
 
 
-Image ler_imagem(){
+Image read_image(){
 
   Image temp;
 
@@ -204,7 +202,7 @@ Image ler_imagem(){
   return temp;
 }
 
-void imprimir_imagem(Image img){
+void print_image(Image img){
   // print type of image
   printf("P3\n");
 
@@ -225,29 +223,29 @@ void imprimir_imagem(Image img){
 
 Image sepia(Image img){
 
-  Image sepia;
+  Image temp;
 
-  sepia = img;
+  temp = img;
 
-  for (unsigned int i = 0; i < sepia.h; i++) {
-      for (unsigned int j = 0; j < sepia.w; ++j) {
+  for (unsigned int i = 0; i < temp.h; i++) {
+      for (unsigned int j = 0; j < temp.w; ++j) {
 
-          int p =  sepia.pixel[i][j].r * .393 + sepia.pixel[i][j].g * .769 + sepia.pixel[i][j].b * .189;
-          sepia.pixel[i][j].r = min(p, 255);
+          int p =  temp.pixel[i][j].r * .393 + temp.pixel[i][j].g * .769 + temp.pixel[i][j].b * .189;
+          temp.pixel[i][j].r = min(p, 255);
 
-          p =  sepia.pixel[i][j].r * .349 + sepia.pixel[i][j].g * .686 + sepia.pixel[i][j].b* .168;
-          sepia.pixel[i][j].g = min(p, 255);
+          p =  temp.pixel[i][j].r * .349 + temp.pixel[i][j].g * .686 + temp.pixel[i][j].b* .168;
+          temp.pixel[i][j].g = min(p, 255);
 
-          p =  sepia.pixel[i][j].r * .272 + sepia.pixel[i][j].g * .534 + sepia.pixel[i][j].b * .131;
-          sepia.pixel[i][j].b = min(p, 255);
+          p =  temp.pixel[i][j].r * .272 + temp.pixel[i][j].g * .534 + temp.pixel[i][j].b * .131;
+          temp.pixel[i][j].b = min(p, 255);
       }
   }
-  return sepia;
+  return temp;
 }
 
 
 int main() {
-    Image img = ler_imagem();
+    Image img = read_image();
 
     int n_opcoes;
     scanf("%d", &n_opcoes);
@@ -258,7 +256,7 @@ int main() {
 
         switch(opcao) {
             case 1: { // Escala de Cinza
-                img = escala_de_cinza(img);
+                img = grayscale(img);
                 break;
             }
             case 2: { // Filtro Sepia
@@ -270,25 +268,25 @@ int main() {
                 break;
             }
             case 4: { // Rotacao
-                img = rotacionar90direita(img);
+                img = rotate_90_right(img);
                 break;
             }
             case 5: { // Espelhamento
-                img = espelhar(img);
+                img = mirror(img);
                 break;
             }
             case 6: { // Inversao de Cores
-                img = inverter_cores(img);
+                img = invert_colors(img);
                 break;
             }
             case 7: { // Cortar Imagem
-                img = cortar_imagem(img);
+                img = crop_image(img);
                 break;
             }
         }
 
     }
-    imprimir_imagem(img);
+    print_image(img);
 
     return 0;
 }
